@@ -9,7 +9,7 @@
 
     <Window.Resources>
         <DataTemplate x:Key="DataTemplate_Level2">
-            <Button x:Name="ItemButton" Click="ItemButton_Click" DataContext="{Binding}"  Content="{Binding Content}" Height="30" Width="30" Margin="1,1,1,1"/>
+            <Button x:Name="ItemButton" Click="Turn" DataContext="{Binding}"  Content="{Binding Content}" Height="30" Width="30" Margin="1,1,1,1"/>
         </DataTemplate>
 
         <DataTemplate x:Key="DataTemplate_Level1">
@@ -34,5 +34,7 @@
         <Viewbox HorizontalAlignment="Right"  Width="Auto" MaxWidth="400" Height="Auto" Margin="50" VerticalAlignment="Top" Grid.Column="2">
             <ItemsControl x:Name="PlayerShipsIS" ItemTemplate="{DynamicResource DataTemplate_Level1}"/>
         </Viewbox>
+        <Label x:Name="PlayerShipSizeLabel" Content="Ship size: " HorizontalAlignment="Left" Margin="19,19,0,0" VerticalAlignment="Top" Height="26" Width="65"/>
+        <Label x:Name="PlayerShipSize" Content="1" HorizontalAlignment="Left" Margin="84,19,0,0" VerticalAlignment="Top" Height="26" Width="58"/>
     </Grid>
 </Window>

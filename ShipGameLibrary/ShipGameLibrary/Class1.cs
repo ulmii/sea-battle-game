@@ -102,12 +102,19 @@ namespace ShipGameLibrary
         }
     }
 
-    public enum BoardType : int
+    public enum BoardType
     {
-        PLAYER_SHIPS = 1,
-        ENEMY_SHIPS = 2,
-        PLAYER_HITS = 3,
-        ENEMY_HITS = 4,
+        PLAYER_SHIPS,
+        ENEMY_SHIPS,
+        PLAYER_HITS,
+        ENEMY_HITS,
+    }
+
+    public enum GameStatus
+    {
+        ONGOING,
+        PLAYER_WIN,
+        ENEMY_WIN
     }
 
     public class ShipGameEngine
@@ -119,6 +126,9 @@ namespace ShipGameLibrary
         public int BoardSize { get; }
         private bool AgainstComputer;
         private bool PlayersTurn;
+        private int HitsToWin = 10;
+        private int PlayerHitsCount = 0;
+        private int EnemyHitsCount = 0;
 
         public ShipGameEngine(int boardSize, bool againstComputer)
         {
@@ -204,7 +214,7 @@ namespace ShipGameLibrary
             this.EnemyShips.SetPositions(1, ship.Positions);
         }
 
-        public void AddPlayerHit(Position position)
+        public Shot AddPlayerHit(Position position)
         {
             if (!this.PlayersTurn) throw new InvalidOperationException("Enemy turn");
 
@@ -215,15 +225,17 @@ namespace ShipGameLibrary
                     if (this.EnemyShips.Arr[position.X, position.Y] == 1)
                     {
                         this.PlayerHits.SetPositions((int)Shot.HIT, new Position[] { position });
-                        return;
+                        this.PlayerHitsCount++;
+                        return Shot.HIT;
                     }
                 }
             }
 
             this.PlayerHits.SetPositions((int)Shot.MISSED, new Position[] { position });
+            return Shot.MISSED;
         }
 
-        public void AddEnemyHit(Position position)
+        public Shot AddEnemyHit(Position position)
         {
             if (this.AgainstComputer) throw new InvalidOperationException("Computer enabled");
             if (this.PlayersTurn) throw new InvalidOperationException("Player turn");
@@ -236,12 +248,30 @@ namespace ShipGameLibrary
                     if (this.PlayerShips.Arr[position.X, position.Y] == 1)
                     {
                         this.EnemyHits.SetPositions((int)Shot.HIT, new Position[] { position });
-                        return;
+                        this.EnemyHitsCount++;
+                        return Shot.HIT;
                     }
                 }
             }
 
             this.EnemyHits.SetPositions((int)Shot.MISSED, new Position[] { position });
+            return Shot.MISSED;
+        }
+
+        public GameStatus GetGameStatus()
+        {
+            if(this.PlayerHitsCount == 10)
+            {
+                return GameStatus.PLAYER_WIN;
+            } 
+            else if (this.EnemyHitsCount == 10)
+            {
+                return GameStatus.ENEMY_WIN;
+            }
+            else
+            {
+                return GameStatus.ONGOING;
+            }
         }
     }
 }
