@@ -207,6 +207,19 @@ namespace ShipGameLibrary
             this.PlayerShips.SetPositions(1, ship.Positions);
         }
 
+        public bool IsFreeSpaceForShip(Board board, Position position)
+        {
+            return board.Arr[position.X, position.Y] == 0
+                && board.Arr[position.X, Math.Min(this.BoardSize - 1, position.Y + 1)] == 0
+                && board.Arr[position.X, Math.Max(0, position.Y - 1)] == 0
+                && board.Arr[Math.Min(position.X + 1, this.BoardSize - 1), position.Y] == 0
+                && board.Arr[Math.Max(position.X - 1, 0), position.Y] == 0
+                && board.Arr[Math.Min(position.X + 1, this.BoardSize - 1), Math.Min(this.BoardSize - 1, position.Y + 1)] == 0
+                && board.Arr[Math.Max(position.X - 1, 0), Math.Max(0, position.Y - 1)] == 0
+                && board.Arr[Math.Min(position.X + 1, this.BoardSize - 1), Math.Max(0, position.Y - 1)] == 0
+                && board.Arr[Math.Max(position.X - 1, 0), Math.Min(this.BoardSize - 1, position.Y + 1)] == 0;
+        }
+
         public void AddEnemyShip(Ship ship)
         {
             if (this.AgainstComputer) throw new InvalidOperationException("Computer enabled");
@@ -260,10 +273,10 @@ namespace ShipGameLibrary
 
         public GameStatus GetGameStatus()
         {
-            if(this.PlayerHitsCount == 10)
+            if (this.PlayerHitsCount == 10)
             {
                 return GameStatus.PLAYER_WIN;
-            } 
+            }
             else if (this.EnemyHitsCount == 10)
             {
                 return GameStatus.ENEMY_WIN;

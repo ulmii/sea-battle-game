@@ -108,7 +108,9 @@ namespace ShipGame
         {
             var data = button.DataContext as DataButton;
 
-            if (data.Value.Type == BoardType.PLAYER_SHIPS && button.Content.Equals("") && IsCorrectShipPosition(data.Value.Position))
+            if (data.Value.Type == BoardType.PLAYER_SHIPS && button.Content.Equals("")
+                && this.Engine.IsFreeSpaceForShip(this.Engine.PlayerShips, data.Value.Position)
+                && IsCorrectShipPosition(data.Value.Position))
             {
                 this._playerShipPositions.Add(data.Value.Position);
                 button.Content = "*";
@@ -121,12 +123,12 @@ namespace ShipGame
                 }
 
                 this.PlayerShipSize.Content = this._addPlayerShipSize;
-            }
 
-            if (this._addPlayerShipSize > 4)
-            {
-                this.PlayerShipSizeLabel.Visibility = Visibility.Hidden;
-                this.PlayerShipSize.Visibility = Visibility.Hidden;
+                if (this._addPlayerShipSize > 4)
+                {
+                    this.PlayerShipSizeLabel.Visibility = Visibility.Hidden;
+                    this.PlayerShipSize.Visibility = Visibility.Hidden;
+                }
             }
         }
 
