@@ -94,8 +94,9 @@ namespace ShipGame
             {
                 this.InitPlayerShips(button);
             }
-            else if (data.Value.Type == BoardType.PLAYER_HITS)
+            else if (data.Value.Type == BoardType.PLAYER_HITS && this.Engine.IsPlayersTurn())
             {
+                var eej = Engine.GetEnemyShots();
                 button.Content = Engine.AddPlayerHit(data.Value.Position);
             }
             if (this.Engine.GetGameStatus() == GameStatus.PLAYER_WIN)

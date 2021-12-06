@@ -1,15 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ShipGameLibrary
 {
-    public enum ShipType : int
-    {
-        SMALL = 1,
-        MEDIUM = 2,
-        BIG = 3,
-        LARGE = 4
-    }
-
     public enum Shot : int
     {
         MISSED = 1,
@@ -62,7 +55,6 @@ namespace ShipGameLibrary
 
     public class Ship
     {
-        ShipType Type { get; }
         public Position[] Positions { get; }
 
         // random position
@@ -126,9 +118,11 @@ namespace ShipGameLibrary
         public int BoardSize { get; }
         private bool AgainstComputer;
         private bool PlayersTurn;
-        private int HitsToWin = 10;
         private int PlayerHitsCount = 0;
         private int EnemyHitsCount = 0;
+        private int _playerShipCount = 0;
+        private int _enemyShipCount = 0;
+        private readonly Random _random = new Random();
 
         public ShipGameEngine(int boardSize, bool againstComputer)
         {
@@ -154,9 +148,7 @@ namespace ShipGameLibrary
                             {
                                 Position shipPosition = ship.Positions[k];
 
-                                if (this.EnemyShips.Arr[shipPosition.X, shipPosition.Y] == 1
-                                    || this.EnemyShips.Arr[Math.Min(shipPosition.X + 1, boardSize - 1), Math.Min(shipPosition.Y + 1, boardSize - 1)] == 1
-                                    || this.EnemyShips.Arr[Math.Max(shipPosition.X - 1, 0), Math.Max(shipPosition.Y - 1, 0)] == 1)
+                                if (!IsFreeSpaceForShip(this.EnemyShips, shipPosition))
                                 {
                                     addShip = false;
                                 }
@@ -172,9 +164,7 @@ namespace ShipGameLibrary
                 }
             }
 
-            Random random = new Random();
-            // this.PlayersTurn = random.Next(0, 2) == 0 ? false : true;
-            this.PlayersTurn = true;
+            this.PlayersTurn = _random.Next(0, 2) != 0;
             this.AgainstComputer = againstComputer;
         }
 
@@ -205,6 +195,12 @@ namespace ShipGameLibrary
         public void AddPlayerShip(Ship ship)
         {
             this.PlayerShips.SetPositions(1, ship.Positions);
+            this._playerShipCount++;
+
+            if(this.AgainstComputer && !this.PlayersTurn && this._playerShipCount >= 4)
+            {
+                this.AiEnemyShot();
+            }
         }
 
         public bool IsFreeSpaceForShip(Board board, Position position)
@@ -225,50 +221,96 @@ namespace ShipGameLibrary
             if (this.AgainstComputer) throw new InvalidOperationException("Computer enabled");
 
             this.EnemyShips.SetPositions(1, ship.Positions);
+            this._enemyShipCount++;
         }
 
         public Shot AddPlayerHit(Position position)
         {
             if (!this.PlayersTurn) throw new InvalidOperationException("Enemy turn");
+            if (this._enemyShipCount < 4) throw new InvalidOperationException("Enemy ships not initialized");
 
-            for (int i = 0; i < this.EnemyShips.Arr.GetLength(0); i++)
+            this.PlayersTurn = false;
+            Shot shot;
+
+            if (this.EnemyShips.Arr[position.X, position.Y] == 1)
+            {
+                this.PlayerHits.SetPositions((int)Shot.HIT, new Position[] { position });
+                this.PlayerHitsCount++;
+                shot = Shot.HIT;
+            }
+            else
+            {
+                this.PlayerHits.SetPositions((int)Shot.MISSED, new Position[] { position });
+                shot = Shot.MISSED;
+            }
+
+            if (this.AgainstComputer)
+            {
+                this.AiEnemyShot();
+            }
+
+            return shot;
+        }
+
+        public void AiEnemyShot()
+        {
+            bool shot = false;
+
+            while (!shot)
+            {
+                int x = this._random.Next(0, 10);
+                int y = this._random.Next(0, 10);
+
+                if (this.EnemyHits.Arr[x, y] == 0)
+                {
+                    this.AddEnemyHit(new Position(x, y));
+                    shot = true;
+                }
+
+            }
+        }
+
+        public Dictionary<Position, Shot> GetEnemyShots()
+        {
+            var positions = new Dictionary<Position, Shot>();
+
+            for (int i = 0; i < this.EnemyHits.Arr.GetLength(0); i++)
             {
                 for (int j = 0; j < this.EnemyShips.Arr.GetLength(1); j++)
                 {
-                    if (this.EnemyShips.Arr[position.X, position.Y] == 1)
+                    if (this.EnemyHits.Arr[i, j] != 0)
                     {
-                        this.PlayerHits.SetPositions((int)Shot.HIT, new Position[] { position });
-                        this.PlayerHitsCount++;
-                        return Shot.HIT;
+                        positions.Add(new Position(i, j), (Shot) this.EnemyHits.Arr[i, j]);
                     }
                 }
             }
 
-            this.PlayerHits.SetPositions((int)Shot.MISSED, new Position[] { position });
-            return Shot.MISSED;
+            return positions;
         }
 
         public Shot AddEnemyHit(Position position)
         {
-            if (this.AgainstComputer) throw new InvalidOperationException("Computer enabled");
             if (this.PlayersTurn) throw new InvalidOperationException("Player turn");
 
+            this.PlayersTurn = true;
 
-            for (int i = 0; i < this.PlayerShips.Arr.GetLength(0); i++)
+            if (this.PlayerShips.Arr[position.X, position.Y] == 1)
             {
-                for (int j = 0; j < this.PlayerShips.Arr.GetLength(1); j++)
-                {
-                    if (this.PlayerShips.Arr[position.X, position.Y] == 1)
-                    {
-                        this.EnemyHits.SetPositions((int)Shot.HIT, new Position[] { position });
-                        this.EnemyHitsCount++;
-                        return Shot.HIT;
-                    }
-                }
+                this.EnemyHits.SetPositions((int)Shot.HIT, new Position[] { position });
+                this.EnemyHitsCount++;
+                return Shot.HIT;
             }
+            else
+            {
 
-            this.EnemyHits.SetPositions((int)Shot.MISSED, new Position[] { position });
-            return Shot.MISSED;
+                this.EnemyHits.SetPositions((int)Shot.MISSED, new Position[] { position });
+                return Shot.MISSED;
+            }
+        }
+
+        public bool IsPlayersTurn()
+        {
+            return this.PlayersTurn;
         }
 
         public GameStatus GetGameStatus()
