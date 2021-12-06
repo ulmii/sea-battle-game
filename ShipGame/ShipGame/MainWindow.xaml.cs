@@ -108,7 +108,7 @@ namespace ShipGame
         {
             var data = button.DataContext as DataButton;
 
-            if (data.Value.Type == BoardType.PLAYER_SHIPS && IsCorrectShipPosition(data.Value.Position))
+            if (data.Value.Type == BoardType.PLAYER_SHIPS && button.Content.Equals("") && IsCorrectShipPosition(data.Value.Position))
             {
                 this._playerShipPositions.Add(data.Value.Position);
                 button.Content = "*";
@@ -136,14 +136,36 @@ namespace ShipGame
             {
                 return true;
             }
-            else if ((_playerShipPositions[0].Y - 1 == position.Y || _playerShipPositions.Last().Y + 1 == position.Y)
-                && (_playerShipPositions[0].X - 1 == position.X
-                || _playerShipPositions.Last().X + 1 == position.X))
+            else if (this._playerShipPositions.Count == 1 && (
+                (_playerShipPositions.Last().Y == position.Y && IsPositionOneUpOrDown(position))
+                || (_playerShipPositions.Last().X == position.X && IsPositionOneLeftOrRight(position))))
+            {
+                return true;
+            }
+            else if ((_playerShipPositions.Last().Y == _playerShipPositions.First().Y && position.Y == _playerShipPositions.Last().Y 
+                && IsPositionOneUpOrDown(position))
+                || (_playerShipPositions.Last().X == _playerShipPositions.First().X && position.X == _playerShipPositions.Last().X 
+                && IsPositionOneLeftOrRight(position)))
             {
                 return true;
             }
 
             return false;
+        }
+
+        private bool IsPositionOneUpOrDown(Position position)
+        {
+            this._playerShipPositions.Sort((a, b) => a.X.CompareTo(b.X));
+
+            return position.X == _playerShipPositions.Last().X - 1 || position.X == _playerShipPositions.Last().X + 1
+                || position.X == _playerShipPositions.First().X - 1 || position.X == _playerShipPositions.First().X + 1;
+        }
+        private bool IsPositionOneLeftOrRight(Position position)
+        {
+            this._playerShipPositions.Sort((a, b) => a.Y.CompareTo(b.Y));
+
+            return position.Y == _playerShipPositions.Last().Y - 1 || position.Y == _playerShipPositions.Last().Y + 1
+                || position.Y == _playerShipPositions.First().Y - 1 || position.Y == _playerShipPositions.First().Y + 1;
         }
     }
 }
