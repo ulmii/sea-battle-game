@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Linq;
+using System.Collections.ObjectModel;
 
 namespace ShipGame
 {
@@ -29,41 +30,21 @@ namespace ShipGame
 
         public MainWindow()
         {
-            List<List<DataButton>> lsts = new List<List<DataButton>>();
-
-            for (int i = 0; i < Engine.BoardSize; i++)
-            {
-                lsts.Add(new List<DataButton>());
-
-                for (int j = 0; j < Engine.BoardSize; j++)
-                {
-                    var model = new DataButton
-                    {
-                        Content = Engine.EnemyShips.Arr[i, j] == 1 ? "*" : "",
-                        Value = new DataButton.ValueCls
-                        {
-                            Type = BoardType.ENEMY_SHIPS,
-                            Position = new Position(i, j)
-                        }
-                    };
-                    lsts[i].Add(model);
-                }
-            }
-
-
             InitializeComponent();
-            this.EnemyShipsIS.ItemsSource = lsts;
             this.PlayerHitsIS.ItemsSource = LoadBasicBoard(BoardType.PLAYER_HITS);
             this.PlayerShipsIS.ItemsSource = LoadBasicBoard(BoardType.PLAYER_SHIPS);
+
+            this.PlayerHitsVB.Visibility = Visibility.Hidden;
+            this.PlayerShipsVB.HorizontalAlignment = HorizontalAlignment.Center;
         }
 
-        private List<List<DataButton>> LoadBasicBoard(BoardType type)
+        private ObservableCollection<ObservableCollection<DataButton>> LoadBasicBoard(BoardType type)
         {
-            List<List<DataButton>> lsts = new List<List<DataButton>>();
+            ObservableCollection<ObservableCollection<DataButton>> lsts = new ObservableCollection<ObservableCollection<DataButton>>();
 
             for (int i = 0; i < Engine.BoardSize; i++)
             {
-                lsts.Add(new List<DataButton>());
+                lsts.Add(new ObservableCollection<DataButton>());
 
                 for (int j = 0; j < Engine.BoardSize; j++)
                 {
@@ -88,25 +69,63 @@ namespace ShipGame
             var button = sender as Button;
             var data = button.DataContext as DataButton;
 
-            var board = Engine.GetBoard(data.Value.Type);
-
-            if (this._addPlayerShipSize < 5)
+            if (this._addPlayerShipSize <= 4)
             {
                 this.InitPlayerShips(button);
+                return;
             }
-            else if (data.Value.Type == BoardType.PLAYER_HITS && this.Engine.IsPlayersTurn())
+
+            if (data.Value.Type == BoardType.PLAYER_HITS && this.Engine.IsPlayersTurn() && data.Content.Count() == 0)
             {
-                var eej = Engine.GetEnemyShots();
-                button.Content = Engine.AddPlayerHit(data.Value.Position);
+                var playerHitBoard = this.PlayerHitsIS.ItemsSource as ObservableCollection<ObservableCollection<DataButton>>;
+
+                playerHitBoard[data.Value.Position.X][data.Value.Position.Y] = new DataButton
+                {
+                    Content = Engine.AddPlayerHit(data.Value.Position) == Shot.HIT ? "X" : "O",
+                    Value = new DataButton.ValueCls
+                    {
+                        Type = BoardType.PLAYER_SHIPS,
+                        Position = new Position(data.Value.Position.X, data.Value.Position.Y)
+                    }
+                };
             }
-            if (this.Engine.GetGameStatus() == GameStatus.PLAYER_WIN)
+
+            this.CheckEnemyShots();
+
+            if (this.Engine.GetGameStatus() != GameStatus.ONGOING)
             {
-                throw new InvalidOperationException("REEEEEEEEE");
+                this.PlayerHitsVB.Visibility = Visibility.Hidden;
+                this.PlayerShipsVB.Visibility = Visibility.Hidden;
+                this.GameEndedLabel.Visibility = Visibility.Visible;
+                this.GameEndedLabel.Content = this.Engine.GetGameStatus() == GameStatus.PLAYER_WIN ? "Player won" : "Computer won";
+            }
+        }
+
+        private void CheckEnemyShots()
+        {
+            var playerBoard = this.PlayerShipsIS.ItemsSource as ObservableCollection<ObservableCollection<DataButton>>;
+
+            foreach (var enemyShot in this.Engine.GetEnemyShots())
+            {
+                var pos = enemyShot.Key;
+                var shot = enemyShot.Value;
+
+
+                playerBoard[pos.X][pos.Y] = new DataButton
+                {
+                    Content = enemyShot.Value == Shot.HIT ? "X" : "O",
+                    Value = new DataButton.ValueCls
+                    {
+                        Type = BoardType.PLAYER_SHIPS,
+                        Position = new Position(pos.X, pos.Y)
+                    }
+                };
             }
         }
 
         private void InitPlayerShips(Button button)
         {
+            var playerBoard = this.PlayerShipsIS.ItemsSource as ObservableCollection<ObservableCollection<DataButton>>;
             var data = button.DataContext as DataButton;
 
             if (data.Value.Type == BoardType.PLAYER_SHIPS && button.Content.Equals("")
@@ -114,7 +133,15 @@ namespace ShipGame
                 && IsCorrectShipPosition(data.Value.Position))
             {
                 this._playerShipPositions.Add(data.Value.Position);
-                button.Content = "*";
+                playerBoard[data.Value.Position.X][data.Value.Position.Y] = new DataButton
+                {
+                    Content = "*",
+                    Value = new DataButton.ValueCls
+                    {
+                        Type = BoardType.PLAYER_SHIPS,
+                        Position = new Position(data.Value.Position.X, data.Value.Position.Y)
+                    }
+                };
 
                 if (this._addPlayerShipSize == this._playerShipPositions.Count)
                 {
@@ -127,8 +154,12 @@ namespace ShipGame
 
                 if (this._addPlayerShipSize > 4)
                 {
+                    this.CheckEnemyShots();
+
                     this.PlayerShipSizeLabel.Visibility = Visibility.Hidden;
                     this.PlayerShipSize.Visibility = Visibility.Hidden;
+                    this.PlayerHitsVB.Visibility = Visibility.Visible;
+                    this.PlayerShipsVB.HorizontalAlignment = HorizontalAlignment.Right;
                 }
             }
         }
@@ -145,9 +176,9 @@ namespace ShipGame
             {
                 return true;
             }
-            else if ((_playerShipPositions.Last().Y == _playerShipPositions.First().Y && position.Y == _playerShipPositions.Last().Y 
+            else if ((_playerShipPositions.Last().Y == _playerShipPositions.First().Y && position.Y == _playerShipPositions.Last().Y
                 && IsPositionOneUpOrDown(position))
-                || (_playerShipPositions.Last().X == _playerShipPositions.First().X && position.X == _playerShipPositions.Last().X 
+                || (_playerShipPositions.Last().X == _playerShipPositions.First().X && position.X == _playerShipPositions.Last().X
                 && IsPositionOneLeftOrRight(position)))
             {
                 return true;

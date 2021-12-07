@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShipGame"
         mc:Ignorable="d"
-        Title="MainWindow" Height="725.625" Width="1208.75">
+        Title="MainWindow" Height="720" MinHeight="720" MinWidth="1000" Width="1000">
 
     <Window.Resources>
         <DataTemplate x:Key="DataTemplate_Level2">
-            <Button x:Name="ItemButton" Click="Turn" DataContext="{Binding}"  Content="{Binding Content}" Height="30" Width="30" Margin="1,1,1,1"/>
+            <Button x:Name="ItemButton" Click="Turn" DataContext="{Binding}"  Content="{Binding Content, UpdateSourceTrigger=PropertyChanged}" Height="30" Width="30" Margin="1,1,1,1"/>
         </DataTemplate>
 
         <DataTemplate x:Key="DataTemplate_Level1">
@@ -25,16 +25,15 @@
     </Window.Resources>
 
     <Grid>
-        <Viewbox HorizontalAlignment="Left"  Width="Auto" MaxWidth="400" Height="Auto" Margin="50" VerticalAlignment="Top" Grid.Column="2">
+        <Viewbox x:Name="PlayerHitsVB" HorizontalAlignment="Left"  Width="Auto" MaxWidth="400" Height="Auto" Margin="50" VerticalAlignment="Center" Grid.Column="2">
             <ItemsControl x:Name="PlayerHitsIS" ItemTemplate="{DynamicResource DataTemplate_Level1}"/>
         </Viewbox>
-        <Viewbox HorizontalAlignment="Center"  Width="Auto" MaxWidth="400" Height="Auto" Margin="50" VerticalAlignment="Top" Grid.Column="2">
-            <ItemsControl x:Name="EnemyShipsIS" ItemTemplate="{DynamicResource DataTemplate_Level1}"/>
-        </Viewbox>
-        <Viewbox HorizontalAlignment="Right"  Width="Auto" MaxWidth="400" Height="Auto" Margin="50" VerticalAlignment="Top" Grid.Column="2">
+        <Viewbox x:Name="PlayerShipsVB" HorizontalAlignment="{Binding}"  Width="Auto" MaxWidth="400" Height="Auto" Margin="50" VerticalAlignment="Center" Grid.Column="2">
             <ItemsControl x:Name="PlayerShipsIS" ItemTemplate="{DynamicResource DataTemplate_Level1}"/>
         </Viewbox>
-        <Label x:Name="PlayerShipSizeLabel" Content="Ship size: " HorizontalAlignment="Left" Margin="19,19,0,0" VerticalAlignment="Top" Height="26" Width="65"/>
-        <Label x:Name="PlayerShipSize" Content="1" HorizontalAlignment="Left" Margin="84,19,0,0" VerticalAlignment="Top" Height="26" Width="58"/>
+        <Label x:Name="PlayerShipSizeLabel" Content="Add ship of size:" HorizontalAlignment="Center" Margin="0, 0, 50, 0" VerticalAlignment="Top" Height="Auto" Width="Auto" FontSize="50"/>
+        <Label x:Name="PlayerShipSize" Content="1" HorizontalAlignment="Center"  Margin="350, 0, 0, 0" VerticalAlignment="Top" Height="Auto" Width="Auto" FontSize="50"/>
+        <Label x:Name="GameEndedLabel" Content="" HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="193" Width="809" FontSize="72" Visibility="Hidden"/>
+        <Label x:Name="LegendLabel" Content="* - Ship&#10;O - Miss&#10;X - Hit" HorizontalAlignment="Left" Margin="20" VerticalAlignment="Bottom" Height="Auto" Width="Auto" FontSize="24"/>
     </Grid>
 </Window>
