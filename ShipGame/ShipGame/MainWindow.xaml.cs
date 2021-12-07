@@ -97,6 +97,7 @@ namespace ShipGame
                 this.PlayerShipsVB.Visibility = Visibility.Hidden;
                 this.GameEndedLabel.Visibility = Visibility.Visible;
                 this.GameEndedLabel.Content = this.Engine.GetGameStatus() == GameStatus.PLAYER_WIN ? "Player won" : "Computer won";
+                this.QuitGameBt.Visibility = Visibility.Visible;
             }
         }
 
@@ -129,8 +130,9 @@ namespace ShipGame
         private void CheckEnemyShots()
         {
             var playerBoard = this.PlayerShipsIS.ItemsSource as ObservableCollection<ObservableCollection<DataButton>>;
+            var test = this.PlayerShipsIS.DataContext;
 
-            foreach (var enemyShot in this.Engine.GetEnemyShots())
+            foreach (var enemyShot in this.Engine.EnemyShots)
             {
                 var pos = enemyShot.Key;
 
@@ -221,6 +223,11 @@ namespace ShipGame
 
             return position.Y == _playerShipPositions.Last().Y - 1 || position.Y == _playerShipPositions.Last().Y + 1
                 || position.Y == _playerShipPositions.First().Y - 1 || position.Y == _playerShipPositions.First().Y + 1;
+        }
+
+        private void QuitGameBt_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
     }
 }

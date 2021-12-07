@@ -1,114 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace ShipGameLibrary
 {
-    public enum Shot : int
-    {
-        MISSED = 1,
-        HIT = 2
-    }
-
-    public class Board
-    {
-        int Size { get; set; }
-        public int[,] Arr { get; set; }
-
-        public Board(int size)
-        {
-            this.Size = size;
-            this.Arr = new int[size, size];
-        }
-
-        public void SetPositions(int type, Position[] positions)
-        {
-            foreach (Position position in positions)
-            {
-                this.Arr[position.X, position.Y] = type;
-            }
-        }
-
-        public void PrintBoard()
-        {
-            for (int i = 0; i < Arr.GetLength(0); i++)
-            {
-                for (int j = 0; j < Arr.GetLength(1); j++)
-                {
-                    Console.Write(Arr[i, j]);
-                }
-                Console.WriteLine();
-            }
-        }
-    }
-
-    public class Position
-    {
-        public int X { get; set; }
-        public int Y { get; set; }
-
-        public Position(int x, int y)
-        {
-            this.X = x;
-            this.Y = y;
-        }
-    }
-
-    public class Ship
-    {
-        public Position[] Positions { get; }
-
-        // random position
-        public Ship(int size, int boardSize)
-        {
-            this.Positions = new Position[size];
-            Random random = new Random();
-
-            int orientation = random.Next(0, 2);
-
-            if (orientation == 1)
-            {
-                int x = random.Next(0, boardSize - size);
-                int y = random.Next(0, boardSize);
-                for (int i = 0; i < size; i++)
-                {
-                    Position position = new Position(x + i, y);
-                    this.Positions[i] = position;
-                }
-            }
-            else
-            {
-                int x = random.Next(0, boardSize);
-                int y = random.Next(0, boardSize - size);
-                for (int i = 0; i < size; i++)
-                {
-                    Position position = new Position(x, y + i);
-                    this.Positions[i] = position;
-                }
-            }
-
-        }
-
-        public Ship(Position[] positions)
-        {
-            this.Positions = positions;
-        }
-    }
-
-    public enum BoardType
-    {
-        PLAYER_SHIPS,
-        ENEMY_SHIPS,
-        PLAYER_HITS,
-        ENEMY_HITS,
-    }
-
-    public enum GameStatus
-    {
-        ONGOING,
-        PLAYER_WIN,
-        ENEMY_WIN
-    }
-
     public class ShipGameEngine
     {
         public Board PlayerShips { get; set; }
@@ -116,7 +11,10 @@ namespace ShipGameLibrary
         public Board PlayerHits { get; }
         public Board EnemyHits { get; }
         public int BoardSize { get; }
-        private bool AgainstComputer;
+        public Dictionary<Position, Shot> EnemyShots = new Dictionary<Position, Shot>();
+
+        private readonly bool AgainstComputer;
+        private readonly int AiDifficulty = 20;
         private bool PlayersTurn;
         private int PlayerHitsCount = 0;
         private int EnemyHitsCount = 0;
@@ -267,34 +165,48 @@ namespace ShipGameLibrary
 
             while (!shot)
             {
-                int x = this._random.Next(0, 10);
-                int y = this._random.Next(0, 10);
+                var hitProbability = this._random.Next(0, 100);
 
-                if (this.EnemyHits.Arr[x, y] == 0)
+                if (hitProbability < this.AiDifficulty)
                 {
-                    this.AddEnemyHit(new Position(x, y));
-                    shot = true;
-                }
+                    var pos = FindPlayerShipPosition();
 
+                    if (this.EnemyHits.Arr[pos.X, pos.Y] == 0)
+                    {
+                        this.AddEnemyHit(pos);
+                        shot = true;
+                    }
+                }
+                else
+                {
+                    int x = this._random.Next(0, 10);
+                    int y = this._random.Next(0, 10);
+
+                    if (this.EnemyHits.Arr[x, y] == 0)
+                    {
+                        this.AddEnemyHit(new Position(x, y));
+                        shot = true;
+                    }
+
+                }
             }
         }
 
-        public Dictionary<Position, Shot> GetEnemyShots()
+        private Position FindPlayerShipPosition()
         {
-            var positions = new Dictionary<Position, Shot>();
-
-            for (int i = 0; i < this.EnemyHits.Arr.GetLength(0); i++)
+            for (int i = 0; i < this.PlayerShips.Arr.GetLength(0); i++)
             {
-                for (int j = 0; j < this.EnemyShips.Arr.GetLength(1); j++)
+                for (int j = 0; j < this.PlayerShips.Arr.GetLength(1); j++)
                 {
-                    if (this.EnemyHits.Arr[i, j] != 0)
+                    var pos = new Position(i, j);
+                    if (this.PlayerShips.Arr[i, j] == 1 && !this.EnemyShots.ContainsKey(pos))
                     {
-                        positions.Add(new Position(i, j), (Shot) this.EnemyHits.Arr[i, j]);
+                        return pos;
                     }
                 }
             }
 
-            return positions;
+            return new Position(this._random.Next(0, 10), this._random.Next(0, 10));
         }
 
         public Shot AddEnemyHit(Position position)
@@ -307,12 +219,13 @@ namespace ShipGameLibrary
             {
                 this.EnemyHits.SetPositions((int)Shot.HIT, new Position[] { position });
                 this.EnemyHitsCount++;
+                this.EnemyShots.Add(position, Shot.HIT);
                 return Shot.HIT;
             }
             else
             {
-
                 this.EnemyHits.SetPositions((int)Shot.MISSED, new Position[] { position });
+                this.EnemyShots.Add(position, Shot.MISSED);
                 return Shot.MISSED;
             }
         }
