@@ -25,6 +25,8 @@
     </Window.Resources>
 
     <Grid>
+        <Label x:Name="PlayerShipsInfoLabel" Content="Your ships" HorizontalAlignment="Left" Margin="615,1,0,0" VerticalAlignment="Top" Height="Auto" Width="Auto" FontSize="50" Visibility="Visible"/>
+        <Label x:Name="PlayerShotsInfoLabel" Content="Your shots" HorizontalAlignment="Left" Margin="113,1,0,0" VerticalAlignment="Top" Height="Auto" Width="Auto" FontSize="50" Visibility="Visible"/>
         <Viewbox x:Name="PlayerHitsVB" HorizontalAlignment="Left"  Width="Auto" MaxWidth="400" Height="Auto" Margin="50" VerticalAlignment="Center" Grid.Column="2">
             <ItemsControl x:Name="PlayerHitsIS" ItemTemplate="{DynamicResource DataTemplate_Level1}"/>
         </Viewbox>
@@ -32,7 +34,9 @@
             <ItemsControl x:Name="PlayerShipsIS" ItemTemplate="{DynamicResource DataTemplate_Level1}"/>
         </Viewbox>
         <Label x:Name="PlayerShipSizeLabel" Content="Add ship of size:" HorizontalAlignment="Center" Margin="0, 0, 50, 0" VerticalAlignment="Top" Height="Auto" Width="Auto" FontSize="50"/>
-        <Label x:Name="PlayerShipSize" Content="1" HorizontalAlignment="Center"  Margin="350, 0, 0, 0" VerticalAlignment="Top" Height="Auto" Width="Auto" FontSize="50"/>
+        <Label x:Name="PlayerShipSizeCount" Content="1" HorizontalAlignment="Center"  Margin="350, 0, 0, 0" VerticalAlignment="Top" Height="Auto" Width="Auto" FontSize="50"/>
+        <Button x:Name="ResetShipsBt" Content="Reset ships" HorizontalAlignment="Center" Margin="40" VerticalAlignment="Bottom" Height="50" Width="150" Click="ResetShipsBt_Click"/>
+        <Button x:Name="StartGameBt" Content="Start game" HorizontalAlignment="Center" Margin="10" VerticalAlignment="Top" Height="50" Width="150" Click="StartGameBt_Click" Visibility="Hidden"/>
         <Label x:Name="GameEndedLabel" Content="" HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="193" Width="809" FontSize="72" Visibility="Hidden"/>
         <Label x:Name="LegendLabel" Content="* - Ship&#10;O - Miss&#10;X - Hit" HorizontalAlignment="Left" Margin="20" VerticalAlignment="Bottom" Height="Auto" Width="Auto" FontSize="24"/>
     </Grid>

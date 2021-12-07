@@ -25,7 +25,6 @@ namespace ShipGame
     {
         private readonly ShipGameEngine Engine = new ShipGameEngine(10, true);
         private int _addPlayerShipSize = 1;
-        private bool _isShipAccepted = false;
         private List<Position> _playerShipPositions = new List<Position>();
 
         public MainWindow()
@@ -101,6 +100,32 @@ namespace ShipGame
             }
         }
 
+        private void ResetShipsBt_Click(object sender, RoutedEventArgs e)
+        {
+            this.Engine.ResetPlayerShips();
+            this._playerShipPositions.Clear();
+            this._addPlayerShipSize = 1;
+            this.PlayerShipSizeCount.Content = 1;
+            this.PlayerShipsIS.ItemsSource = LoadBasicBoard(BoardType.PLAYER_SHIPS);
+            this.StartGameBt.Visibility = Visibility.Hidden;
+            this.PlayerShipSizeLabel.Visibility = Visibility.Visible;
+            this.PlayerShipSizeCount.Visibility = Visibility.Visible;
+        }
+        private void StartGameBt_Click(object sender, RoutedEventArgs e)
+        {
+            this.Engine.StartGame();
+            this.CheckEnemyShots();
+
+            this.PlayerShipSizeLabel.Visibility = Visibility.Hidden;
+            this.PlayerShipSizeCount.Visibility = Visibility.Hidden;
+            this.PlayerHitsVB.Visibility = Visibility.Visible;
+            this.PlayerShipsVB.HorizontalAlignment = HorizontalAlignment.Right;
+            this.ResetShipsBt.Visibility = Visibility.Hidden;
+            this.StartGameBt.Visibility = Visibility.Hidden;
+            this.PlayerShotsInfoLabel.Visibility = Visibility.Visible;
+            this.PlayerShipsInfoLabel.Visibility = Visibility.Visible;
+        }
+
         private void CheckEnemyShots()
         {
             var playerBoard = this.PlayerShipsIS.ItemsSource as ObservableCollection<ObservableCollection<DataButton>>;
@@ -108,8 +133,6 @@ namespace ShipGame
             foreach (var enemyShot in this.Engine.GetEnemyShots())
             {
                 var pos = enemyShot.Key;
-                var shot = enemyShot.Value;
-
 
                 playerBoard[pos.X][pos.Y] = new DataButton
                 {
@@ -127,6 +150,7 @@ namespace ShipGame
         {
             var playerBoard = this.PlayerShipsIS.ItemsSource as ObservableCollection<ObservableCollection<DataButton>>;
             var data = button.DataContext as DataButton;
+            var check = this.Engine.IsFreeSpaceForShip(this.Engine.PlayerShips, data.Value.Position);
 
             if (data.Value.Type == BoardType.PLAYER_SHIPS && button.Content.Equals("")
                 && this.Engine.IsFreeSpaceForShip(this.Engine.PlayerShips, data.Value.Position)
@@ -150,16 +174,13 @@ namespace ShipGame
                     this._playerShipPositions.Clear();
                 }
 
-                this.PlayerShipSize.Content = this._addPlayerShipSize;
+                this.PlayerShipSizeCount.Content = this._addPlayerShipSize;
 
                 if (this._addPlayerShipSize > 4)
                 {
-                    this.CheckEnemyShots();
-
                     this.PlayerShipSizeLabel.Visibility = Visibility.Hidden;
-                    this.PlayerShipSize.Visibility = Visibility.Hidden;
-                    this.PlayerHitsVB.Visibility = Visibility.Visible;
-                    this.PlayerShipsVB.HorizontalAlignment = HorizontalAlignment.Right;
+                    this.PlayerShipSizeCount.Visibility = Visibility.Hidden;
+                    this.StartGameBt.Visibility = Visibility.Visible;
                 }
             }
         }

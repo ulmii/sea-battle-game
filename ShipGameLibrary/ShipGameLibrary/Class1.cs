@@ -111,7 +111,7 @@ namespace ShipGameLibrary
 
     public class ShipGameEngine
     {
-        public Board PlayerShips { get; }
+        public Board PlayerShips { get; set; }
         public Board EnemyShips { get; }
         public Board PlayerHits { get; }
         public Board EnemyHits { get; }
@@ -196,8 +196,17 @@ namespace ShipGameLibrary
         {
             this.PlayerShips.SetPositions(1, ship.Positions);
             this._playerShipCount++;
+        }
 
-            if(this.AgainstComputer && !this.PlayersTurn && this._playerShipCount >= 4)
+        public void ResetPlayerShips()
+        {
+            this.PlayerShips = new Board(this.BoardSize);
+            this._playerShipCount = 0;
+        }
+
+        public void StartGame()
+        {
+            if (this.AgainstComputer && !this.PlayersTurn && this._playerShipCount >= 4)
             {
                 this.AiEnemyShot();
             }
