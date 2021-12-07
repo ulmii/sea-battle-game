@@ -14,7 +14,7 @@ namespace ShipGameLibrary
         public Dictionary<Position, Shot> EnemyShots = new Dictionary<Position, Shot>();
 
         private readonly bool AgainstComputer;
-        private readonly int AiDifficulty = 20;
+        private readonly int AiDifficulty = 10;
         private bool PlayersTurn;
         private int PlayerHitsCount = 0;
         private int EnemyHitsCount = 0;

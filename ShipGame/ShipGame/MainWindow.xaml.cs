@@ -97,6 +97,8 @@ namespace ShipGame
                 this.PlayerShipsVB.Visibility = Visibility.Hidden;
                 this.GameEndedLabel.Visibility = Visibility.Visible;
                 this.GameEndedLabel.Content = this.Engine.GetGameStatus() == GameStatus.PLAYER_WIN ? "Player won" : "Computer won";
+                this.PlayerShipsInfoLabel.Visibility = Visibility.Hidden;
+                this.PlayerShotsInfoLabel.Visibility = Visibility.Hidden;
                 this.QuitGameBt.Visibility = Visibility.Visible;
             }
         }
